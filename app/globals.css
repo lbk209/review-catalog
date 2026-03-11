@@ -24,3 +24,9 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+[data-active="true"] {
+  background-color: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}

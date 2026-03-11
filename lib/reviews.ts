@@ -14,12 +14,13 @@ export type ReviewsCursor = {
 };
 
 export type GetReviewsFilters = {
-  entity_id?: number;
-  entity_ids?: number[];
-  text_query?: string;
-  limit?: number;
-  cursor_created_at?: string;
-  cursor_id?: number;
+  entity_id?: number
+  entity_ids?: number[]
+  text_query?: string
+  topic_id?: number
+  cursor_created_at?: string
+  cursor_id?: number
+  limit?: number
 };
 
 export type GetReviewsByEntityIdOptions = {
@@ -56,6 +57,16 @@ export function buildReviewQuery(filters: GetReviewsFilters = {}): BuiltReviewQu
   let cursorCondition: string | null = null;
   const params: Array<number | string> = [];
 
+  const topicId =
+    typeof filters.topic_id === "number"
+    && Number.isInteger(filters.topic_id)
+    && filters.topic_id > 0
+      ? filters.topic_id
+      : null;
+  if (topicId !== null) {
+    params.push(topicId);
+  }
+
   const entityIds = [
     filters.entity_id,
     ...(Array.isArray(filters.entity_ids) ? filters.entity_ids : []),
@@ -63,16 +74,16 @@ export function buildReviewQuery(filters: GetReviewsFilters = {}): BuiltReviewQu
   const uniqueEntityIds = [...new Set(entityIds)];
 
   if (uniqueEntityIds.length === 1) {
-    entityCondition = "entity_id = ?";
+    entityCondition = "r.entity_id = ?";
     params.push(uniqueEntityIds[0]);
   } else if (uniqueEntityIds.length > 1) {
-    entityCondition = `entity_id IN (${uniqueEntityIds.map(() => "?").join(", ")})`;
+    entityCondition = `r.entity_id IN (${uniqueEntityIds.map(() => "?").join(", ")})`;
     params.push(...uniqueEntityIds);
   }
 
   const textQuery = typeof filters.text_query === "string" ? filters.text_query.trim() : "";
   if (textQuery.length > 0) {
-    textCondition = "content LIKE ? COLLATE NOCASE";
+    textCondition = "r.content LIKE ? COLLATE NOCASE";
     params.push(`%${textQuery}%`);
   }
 
@@ -86,8 +97,8 @@ export function buildReviewQuery(filters: GetReviewsFilters = {}): BuiltReviewQu
 
   if (hasCursor) {
     cursorCondition = `(
-  created_at < ?
-  OR (created_at = ? AND id < ?)
+  r.created_at < ?
+  OR (r.created_at = ? AND r.id < ?)
 )`;
     params.push(
       filters.cursor_created_at as string,
@@ -96,8 +107,14 @@ export function buildReviewQuery(filters: GetReviewsFilters = {}): BuiltReviewQu
     );
   }
 
-  let sql = `SELECT *
-FROM reviews`;
+  let sql = `SELECT r.*
+FROM reviews r`;
+  if (topicId !== null) {
+    sql += `
+JOIN review_topics rt
+  ON rt.review_id = r.id
+ AND rt.topic_id = ?`;
+  }
 
   const whereClauses = [entityCondition, textCondition, cursorCondition].filter(
     (clause): clause is string => clause !== null,
@@ -108,7 +125,7 @@ WHERE ${whereClauses.join(" AND ")}`;
   }
 
   sql += `
-ORDER BY created_at DESC, id DESC
+ORDER BY r.created_at DESC, r.id DESC
 LIMIT ?;`;
   params.push(limit);
 

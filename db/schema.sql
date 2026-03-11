@@ -58,6 +58,21 @@ CREATE TABLE reviews (
   FOREIGN KEY (entity_id) REFERENCES entities(id) ON DELETE CASCADE
 );
 
+CREATE TABLE topics (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE review_topics (
+  review_id INTEGER NOT NULL,
+  topic_id INTEGER NOT NULL,
+  PRIMARY KEY (review_id, topic_id),
+  FOREIGN KEY (review_id) REFERENCES reviews(id) ON DELETE CASCADE,
+  FOREIGN KEY (topic_id) REFERENCES topics(id)
+);
+
 CREATE TABLE entity_slug_history (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   entity_id INTEGER NOT NULL,
@@ -68,6 +83,12 @@ CREATE TABLE entity_slug_history (
 
 CREATE INDEX idx_reviews_entity_id
 ON reviews(entity_id);
+
+CREATE INDEX idx_review_topics_topic
+ON review_topics(topic_id);
+
+CREATE INDEX idx_review_topics_review
+ON review_topics(review_id);
 
 CREATE INDEX idx_relations_from_entity
 ON relations(from_entity_id);

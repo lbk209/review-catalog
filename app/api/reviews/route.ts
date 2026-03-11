@@ -32,6 +32,7 @@ export async function GET(request: Request) {
   const qRaw = url.searchParams.get("q");
   const textQuery = qRaw?.trim() ?? "";
   const limitRaw = url.searchParams.get("limit");
+  const topicIdRaw = url.searchParams.get("topic_id");
   const cursorCreatedAtRaw = url.searchParams.get("cursor_created_at");
   const cursorIdRaw = url.searchParams.get("cursor_id");
 
@@ -43,6 +44,11 @@ export async function GET(request: Request) {
   const limitParsed = parsePositiveInteger(limitRaw);
   if (limitRaw !== null && limitParsed === null) {
     return NextResponse.json({ error: "Invalid limit" }, { status: 400 });
+  }
+
+  const topicIdParsed = parsePositiveInteger(topicIdRaw);
+  if (topicIdRaw !== null && topicIdParsed === null) {
+    return NextResponse.json({ error: "Invalid topic_id" }, { status: 400 });
   }
 
   const hasCursorCreatedAt = cursorCreatedAtRaw !== null && cursorCreatedAtRaw.trim() !== "";
@@ -65,6 +71,7 @@ export async function GET(request: Request) {
   const page = await getReviews({
     entity_id: entityIdParsed ?? undefined,
     text_query: textQuery.length > 0 ? textQuery : undefined,
+    topic_id: topicIdParsed ?? undefined,
     limit: limitParsed !== null ? Math.min(limitParsed, MAX_LIMIT) : undefined,
     cursor_created_at: hasCursorCreatedAt ? (cursorCreatedAtRaw as string) : undefined,
     cursor_id: hasCursorId ? (cursorIdParsed as number) : undefined,
