@@ -1,0 +1,8 @@
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:4018
+- Network:       http://192.168.0.9:4018
+
+✓ Starting...
+✓ Ready in 484ms
+ GET /entities/test/test 404 in 801ms (compile: 666ms, render: 135ms)
+ GET /entities/product/%EA%B3%A0%EC%B6%94%EB%B0%94%EC%82%AC%EC%82%AD 404 in 59ms (compile: 17ms, render: 42ms)

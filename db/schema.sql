@@ -50,8 +50,9 @@ CREATE TABLE relations (
 
 CREATE TABLE reviews (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  entity_id INTEGER NOT NULL,
-  rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+  entity_id INTEGER,
+  raw_entity_name TEXT,
+  rating INTEGER CHECK (rating BETWEEN 1 AND 5),
   content TEXT NOT NULL,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (entity_id) REFERENCES entities(id) ON DELETE CASCADE
